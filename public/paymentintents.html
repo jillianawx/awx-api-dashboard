@@ -1,0 +1,135 @@
+ <!DOCTYPE html>
+ <html>
+   <head lang="en">
+     <meta http-equiv="Access-Control-Allow-Origin" content="*">
+     <meta charset="utf-8" />
+     <link rel="stylesheet" href="style.css" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+     <title>Online Payments - Airwallex Quickstart</title>
+     <script src="helper.js"></script>
+     <script src="paymentintentshelper.js"></script>
+     <script src="paymentlinkshelper.js"></script>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+   </head>
+ 
+   <body>
+     <h1>Online Payments</h1>
+     Connected Account ID (Optional): <input type="text" id="caIdInput" /><br>
+     <div class="buttonOptions">
+      <h2>Payment Links</h2>
+      <button id="getPaymentLinks">Get all Links+</button>
+      <button id="createPaymentLink">Create Link*</button><br><br>
+      Payment Link ID: <input type="text" id="linkIdInput" /><br>
+      <button id="getPaymentLink">Get Link</button>
+      <button id="updatePaymentLink">Update Link*</button>
+      <button id="sendPaymentLink">Send Link*</button>
+      <button id="activatePaymentLink">Activate Link</button>
+      <button id="deactivatePaymentLink">Deactivate Link</button>
+      <h1>Payment Intents (PIs)</h1>
+      <button id="loadPaymentIntents">Get all PIs+</button>
+      <button id="createPaymentIntent">Create PI*</button>
+      <br><br>
+      Payment Intent ID: <input type="text" id="piIdInput" /><br>
+      To make payment via the Embedded elements, please use 'Get PI' to be redirected<br>
+      <button id="getPaymentIntent">Get PI</button>
+      <button id="confirmPaymentIntent">Confirm PI*</button>
+      <button id="continue3DSPaymentIntent">Continue to Confirm PI*</button>
+      <button id="cancelPaymentIntent">Cancel PI*</button>
+      <button id="capturePaymentIntent">Capture PI*</button>
+     <h1>Payment Attempts</h1>
+      <button id="getPaymentAttempts">Get all Payment Attempts+</button>
+      <button id="getPaymentAttempt">Get Payment Attempt</button>
+      Payment Attempt ID: <input type="text" id="attemptIdInput" />
+      <h1>Refunds</h1>
+      * For intents involving Fund Splits, please remember to request a fund split reversal.<br>
+      <button id="createRefund">Create Refunds*</button>
+      <button id="getRefunds">Get all Refunds+</button>
+      <button id="getRefund">Get Refund</button>
+      Refund ID: <input type="text" id="refundIdInput" /><br>
+      <br><br>
+    </div>
+    <div class="jsonOverride">
+      *Payload Override. Enter payload here for any 'post' request.<br>
+      +Parameters Override. Enter query (ie ?page_num=1&page_size=25) here for list 'get' request.
+      <textarea id="jsonBodyInput" rows = "20" cols = "60"></textarea>
+    </div>
+    <div>
+      <p id="error" style="max-width: 80%"></p>
+      <p id="success">Success!</p>
+      <div id="contentContainer"></div>
+     </div>
+     <script>
+      $(document).ready(function() {
+        var caId = getUrlParam("caId")
+        if (caId && caId != String.Empty) {
+          document.getElementById("caIdInput").value = caId
+        }
+      })
+
+      attachEventListenersPaymentIntents()
+      attachEventListenersPaymentLinks()
+
+      function getHtmlForIntent(paymentIntent) {
+        var paymentMethod = paymentIntent.method ?? paymentIntent.latest_payment_attempt?.payment_method?.type;
+        var buttons = ''
+        if (paymentIntent.status == 'REQUIRES_CAPTURE') {
+          var caId = document.getElementById("caIdInput").value ?? getUrlParam("caId") 
+            buttons += '<a class="button" href="/fundssplits?piId=' + paymentIntent.id +
+          '&caId=' + caId + '" target="_blank">Manage Funds Split</a>'
+        }
+        if (paymentIntent.status == 'REQUIRES_PAYMENT_METHOD' && paymentIntent.client_secret) {
+          buttons += ' <a class="button" href="/payment-demo/index?piId=' + paymentIntent.id +
+          '&clientSecret=' + paymentIntent.client_secret + '" target="_blank">Make Payment (Embedded)</a><br><br>'
+        }
+
+        return '<div class="card"> \
+              <div class="card__details">\
+                <span class="tag">' + paymentIntent.status + '</span> ' + 
+                (paymentIntent.status == 'SUCCEEDED' ? '<span class="tag">' + paymentMethod + '</span> ' : '') +
+                '<div class="name">' + paymentIntent.id + '</div>\
+                <pre><code>' + JSON.stringify(paymentIntent, undefined, 4) + '</code></pre>' +
+                buttons +
+              '</div>\
+            </div>\''
+      }
+
+      function getHtmlForAttempt(paymentAttempt) {
+        return '<div class="card"> \
+              <div class="card__details">\
+                <span class="tag">' + paymentAttempt.status + '</span>\
+                <span class="tag">' + paymentAttempt.settle_via + '</span> ' + 
+                '<div class="name">' + paymentAttempt.id + '</div>\
+                <pre><code>' + JSON.stringify(paymentAttempt, undefined, 4) + '</code></pre>' +
+              '</div>\
+            </div>\''
+      }
+
+      function getHtmlForRefund(refund) {
+        return '<div class="card"> \
+              <div class="card__details">\
+                <span class="tag">' + refund.status + '</span>' +
+                '<div class="name">' + refund.id + '</div>\
+                <pre><code>' + JSON.stringify(refund, undefined, 4) + '</code></pre>' +
+              '</div>\
+            </div>\''
+      }
+
+      function getHtmlForLink(link) {
+        var buttons = ''
+        if (link.active) {
+          buttons += '<a class="button" href="' + link.url + '" target="_blank">Open Link</a>'
+        }
+        return '<div class="card"> \
+              <div class="card__details">\
+                <span class="tag">' + link.status + '</span>' +
+                ' <span class="tag">Active:' + link.active + '</span>' +
+                '<div class="name">' + link.id + '</div>\
+                <pre><code>' + JSON.stringify(link, undefined, 4) + '</code></pre>' +
+                buttons + 
+              '</div>\
+            </div>'
+      }
+     </script>
+   </body>
+ </html>
+ 

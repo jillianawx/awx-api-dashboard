@@ -1,0 +1,84 @@
+ <!DOCTYPE html>
+ <html>
+   <head lang="en">
+     <meta http-equiv="Access-Control-Allow-Origin" content="*">
+     <meta charset="utf-8" />
+     <link rel="stylesheet" href="style.css" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+     <title>Scale - Airwallex Quickstart</title>
+     <script src="../helper.js"></script>
+     <script src="../scalehelper.js"></script>
+   </head>
+ 
+   <body>
+    <h1>Scale</h1>
+    <p>Please note that Airboard settings need to be enabled for Platform account before creating connected accounts. 
+    <a href="https://airwallex.atlassian.net/wiki/spaces/Airwallex/pages/2425619876/Scale+Airboard+Settings" target="_blank">Confluence</a><br>
+    API Docs for <a href="https://www.airwallex.com/docs/api?v=2023-08-31#/Scale/Accounts/" target="_blank">Scale</a><br></p>
+    <div class="buttonOptions">
+      <button id="createPlatformReport">Create Platform Report*</button>
+      <input type="radio" name="reportType" value="TRANSACTION_RECON_REPORT"> Transaction Recon</input>
+      <input type="radio" name="reportType" value="PAYOUT_REPORT"> Payout</input>
+      <input type="radio" name="reportType" value="BALANCE_REPORT"> Balance</input>
+      <input type="radio" name="reportType" value="ACCOUNT_REPORT"> Account</input><br>
+      <button id="getPlatformReport">Get Platform Report</button> Report ID: <input type="text" id="reportIdInput" /> 
+      <br>
+      <button id="getAccountDetails">Get AWX Account Details</button>
+      <button id="getAccountWalletInformation">Get AWX Account Wallet Information</button>
+      <br><br>
+      <button id="loadConnectedAccounts">Get all CAs+</button><br>
+      <button id="fullProcess" name="createConnectedAccount">Create New CA (Full Process)</button>
+      <button name="createConnectedAccount">Create New CA*</button>
+      <input type="radio" name="entityType" value="Biz"> Business</input> <input type="radio" name="entityType" value="Indiv"> Individual</input>
+      <br><br>
+      Connected Account ID: <input type="text" id="caIdInput" /><br>
+      <button id="getConnectedAccount">Get CA</button>
+      <button id="agreeConnectedAccountTC">CA Agree to T&Cs</button>
+      <button id="submitConnectedAccount">Submit CA</button>
+      <button id="ACTIVE" name="updateStatusConnectedAccount">Approve CA*</button>
+      <button id="SUSPENDED" name="updateStatusConnectedAccount">Suspend CA*</button>
+      <button id="updateConnectedAccount">Update CA*</button>
+      <br>Note: Submission of Individual CA does not work for now.
+      <br><br>
+    </div>
+    <div class="jsonOverride">
+      *Payload Override. Enter payload here for any 'post' request.<br>
+      +Parameters Override. Enter query (ie ?page_num=1&page_size=25) here for list 'get' request.
+      <textarea id="jsonBodyInput" rows = "20" cols = "60"></textarea>
+    </div>
+    <div>
+      <p id="error" style="max-width: 80%"></p>
+      <p id="success">Success!</p>
+      <div id="contentContainer"></div>
+    </div>
+    <script>
+      attachEventListeners()
+
+      function getHtmlForAccount(account) {
+        var accountDetails = account.account_details;
+        var entityName = ''
+        if (accountDetails.legal_entity_type === 'BUSINESS') { entityName = accountDetails.business_details.business_name; }
+        else { entityName = accountDetails.individual_details.first_name + ' ' + accountDetails.individual_details.last_name }
+        var buttons = '';
+        if (account.status == 'ACTIVE') {
+          buttons += '<br><a class="button" href="/paymentintents?caId=' + account.id +'" target="_blank">Manage Payment Intents</a>'
+          buttons += ' <a class="button" href="/payouts?caId=' + account.id +'" target="_blank">Manage Payouts</a>'
+          buttons += ' <a class="button" href="/wallet?caId=' + account.id +'" target="_blank">Manage Wallet</a>'
+          buttons += ' <a class="button" href="/globalaccounts?caId=' + account.id +'" target="_blank">Manage Global Accounts</a>'
+          buttons += ' <a class="button" href="/linkedaccounts?caId=' + account.id +'" target="_blank">Manage Linked Accounts</a><br><br>'
+        }
+        return '<div class="card"> \
+              <div class="card__details">\
+                <span class="tag">' + account.status + '</span> ' + 
+                (account.status === 'ACTION_REQUIRED' ? '<span class="tag">' + account.next_action.type + '</span> ' : '') +
+                '<span class="tag">' + accountDetails.legal_entity_type + '</span>' + 
+                '<div class="name">' + account.nickname + ' (' + entityName + ') <i>(ID: ' + account.id + ')</i></div>\
+                <pre><code>' + JSON.stringify(account, undefined, 4) + '</code></pre>' +
+                buttons +
+              '</div>\
+            </div><br>'
+      }
+     </script>
+   </body>
+ </html>
+ 

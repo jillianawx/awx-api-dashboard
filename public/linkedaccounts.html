@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Linked Accounts - Airwallex Quickstart</title>
+    <script src="../helper.js"></script>
+    <script src="../linkedaccountshelper.js"></script>
+    <script src="../directdebitdepositshelper.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <div>
+        <p>Note:<br>For managing behalf of Connected Accounts, please include the CA ID in the text field or in the URL params.<br><br>
+        <b>Connected Account ID (Optional):</b> <input type="text" id="caIdInput" /><br>
+        Some API endpoints do not work in Demo unless a proper linked account is connected.
+    </div>
+    <div class="buttonOptions">
+      <h1>Linked Accounts (LAs)</h1>
+      <button id="getLinkedAccounts">Get LAs+</button>
+      <button id="generateLAAuth">Generate Auth*</button>
+      <button id="createLinkedAccount">Create LA*</button><br>
+      Note: Please ensure that account name is valid - override the JSON request body.
+      <br><br>
+      <input type="radio" name="authType" value="PLAID"> Plaid</input>
+      <input type="radio" name="authType" value="TRUELAYER"> Truelayer</input><br><br>
+      Linked Account ID: <input type="text" id="linkedAccIdInput" /><br>
+      <button id="getLinkedAccount">Get LA</button>
+      <button id="verifyLAMicroDeposit">Verify LA (MicroDeposit)*</button>
+      <button id="getDDMandate">Get DD Mandate</button>
+      <button id="updateDDMandate">Update DD Mandate*</button>
+      <button id="suspendLinkedAccount">Suspend LA</button>
+      <button id="checkLABalance">Check Balance</button>
+      <button id="confirmLinkedAccount">Confirm LA (Candidate)*</button>
+      <button id="refreshLAAuth">Refresh Auth*</button>
+      <button id="completeLAAuth">Complete Auth Refresh</button>
+
+      <h1>Direct Debits Deposits (DDs)</h1>
+      <button id="getFundingLimits">Get Funding Limits+</button>
+      <button id="createDirectDebitDeposit">Create DD*</button><br>
+      <button id="updateDepositStatus">Update Deposit</button>
+       DD Deposit ID: <input type="text" id="ddebitIdInput" />
+      <input type="radio" name="depositStatus" value="reject"> Reject</input>
+      <input type="radio" name="depositStatus" value="reverse"> Reverse</input>
+      <input type="radio" name="depositStatus" value="settle"> Settle</input>
+      <br><br>
+    </div>
+   <div class="jsonOverride">
+     *Payload Override. Enter payload here for any 'post' request.<br>
+     +Parameters Override. Enter query (ie ?page_num=1&page_size=25) here for list 'get' request.
+     <textarea id="jsonBodyInput" rows = "20" cols = "60"></textarea>
+   </div>
+   <div>
+     <p id="error" style="max-width: 80%"></p>
+     <p id="success">Success!</p>
+     <div id="contentContainer"></div>
+   </div>
+   <script>
+    $(document).ready(function() {
+        var caId = getUrlParam("caId")
+        if (caId && caId != String.Empty) {
+          document.getElementById("caIdInput").value = caId
+        }
+      })
+    
+     attachEventListenersLinkedAccounts()
+     attachEventListenersDirectDebitDeposits()
+     function getHtmlForLinkedAccount(account) {
+      var nextAction = ''
+      if (account.status == 'REQUIRES_ACTION') {
+        nextAction = '<span class="tag">' + account.next_action?.type + '</span>'
+      }
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + account.status + '</span> ' + 
+                '<span class="tag">' + account.type + '</span> ' + 
+                nextAction +
+               '<div class="name">' + account.id + '</div>\
+               <pre><code>' + JSON.stringify(account, undefined, 4) + '</code></pre>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForMandate(mandate) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + mandate.status + '</span> ' + 
+                '<span class="tag">' + mandate.type + '</span> ' + 
+                '<span class="tag">' + mandate.version + '</span> ' + 
+               '<pre><code>' + JSON.stringify(mandate, undefined, 4) + '</code></pre>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForLimit(limit) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + limit.status + '</span> ' + 
+                '<span class="tag">' + limit.type + '</span> ' + 
+                '<span class="tag">' + limit.currency + '</span> ' + 
+               '<pre><code>' + JSON.stringify(limit, undefined, 4) + '</code></pre>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForDeposit(deposit) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + deposit.status + '</span> ' + 
+                '<span class="tag">' + deposit.type + '</span> ' + 
+                '<span class="tag">' + deposit.currency + '</span> ' + 
+               '<div class="name">' + deposit.deposit_id + '</div>' +
+               '<pre><code>' + JSON.stringify(deposit, undefined, 4) + '</code></pre>\
+             </div>\
+           </div><br>'
+     }
+    </script>
+  </body>
+</html>

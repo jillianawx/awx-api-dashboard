@@ -1,0 +1,82 @@
+<!-- 
+  index.html
+  Airwallex Payment Demo - Static HTML.  Created by Josie Ku.
+
+  This file is the main page that links all the demos together.
+ -->
+ <!DOCTYPE html>
+ <html>
+   <head lang="en">
+     <meta charset="utf-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+     <title>Airwallex Payment Elements Playground</title>
+     <link rel="stylesheet" href="../style.css" />
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+   </head>
+   <body>
+     <h1>Airwallex Payment Elements Playground</h1>
+     <p>See the below pages for a live demo!</p>
+     <p>
+       Be sure to update the <span id="code">intent_id</span> and
+       <span id="code">client_secret</span> in the URL params to see the elements work ~<br>
+       Sample url: /payments-demo/card?piId='int_123456'&clientSecret='eyzbcde'
+     </p>
+     <div id="links"></div>
+     <h3>Here are some tips to help you navigate this project:</h3>
+     <div className="instruction-container">
+       <p id="bullet">1. Feeling confused about these Airwallex functions?</p>
+       <p>
+         Here is the documentation to all our airwallex-payment-elements
+         functions. You will find detailed guides to implementing each payment
+         method with different web frameworks as well as common errors.
+       </p>
+       <a
+         href="https://github.com/airwallex/airwallex-payment-demo/tree/master/docs"
+         target="_blank"
+         rel="noreferrer"
+       >
+         https://github.com/airwallex/airwallex-payment-demo/tree/master/docs
+       </a>
+       <p id="bullet">2. If you run into the following error:</p>
+       <p id="error" style="display: block">Airwallex is not defined</p>
+       <p>
+         Remember to replace the<span id="code">x.x.x</span>in your imported
+         bundle on Step 1 to the latest
+         <a href="npmjs.com/package/airwallex-payment-elements"
+           >airwallex-payment-elements</a
+         >
+         package version!
+       </p>
+       <p id="bullet">3. If you run into the following error:</p>
+       <p id="error" style="display: block">
+         Access denied, authentication failed
+       </p>
+       <p>
+         Remember to change the<span id="code">intent_id</span>and
+         <span id="code">client_secret</span>in your component file!
+       </p>
+       <p id="bullet">4. Send us your suggestions!</p>
+       <p>
+         Have some ideas on other ways to integrate
+         airwallex-payment-elements?&nbsp;
+         <a href="https://www.airwallex.com/contact-sales">Let us know!</a> We
+         want to build the best product for you.
+       </p>
+     </div>
+     <p id="author">Delivered by Airwallex</p>
+   </body>
+ </html>
+
+ <script>
+  $(document).ready(function() {
+    const queryString = window.location.search;
+    document.getElementById('links').innerHTML = '<a href="/payment-demo/card' +  queryString + '">Card</a>\
+       <a href="/payment-demo/hpp' +  queryString + '">Hosted Payment Page (HPP)</a>\
+       <a href="/payment-demo/dropin' +  queryString + '">Dropin</a>\
+       <a href="/payment-demo/full-featured-card' +  queryString + '">Full Feature Card</a>\
+       <a href="/payment-demo/split-card' +  queryString + '">Split Card</a>\
+       <a href="/payment-demo/wechat' +  queryString + '">Wechat</a>\
+       <a href="/payment-demo/redirect' +  queryString + '">Redirect</a>\
+       <a href="/payment-demo/3dsForNativeApi' +  queryString + '">3dsForNativeApi</a>'
+  })
+ </script>

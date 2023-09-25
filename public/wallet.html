@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wallet - Airwallex Quickstart</title>
+    <script src="../helper.js"></script>
+    <script src="../wallethelper.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <div>
+        <p>Note:<br>For managing behalf of Connected Accounts, please include the CA ID in the text field or in the URL params.<br><br>
+        <b>Connected Account ID (Optional):</b> <input type="text" id="caIdInput" /><br>
+    </div>
+    <div class="buttonOptions">
+      <h1>Balances and Deposits</h1>
+      <button id="getCurrentBalances">Get Balances</button>
+      <button id="getBalanceHistory">Get Balance History+</button><br>
+      <button id="getDeposits">Get all Deposits+</button>
+      <button id="getDeposit">Get Deposit</button> Deposit ID: <input type="text" id="depositIdInput" />
+      <h1>Financial Transactions, Settlements, Reports</h1>
+      <button id="getTransactions">Get all Transactions+</button>
+      <button id="getTransaction">Get Transaction</button> Transaction ID: <input type="text" id="transactionIdInput" /><br>
+      <button id="createLetter">Create Confirmation Letter*</button>
+      (For Deposits and Payments)
+      <input type="radio" name="letterType" value="STANDARD"> Standard</input>
+      <input type="radio" name="letterType" value="NO_FEE_DISPLAY"> No Fee Display</input><Br>
+      <button id="getSettlements">Get all Settlements+</button><br>
+      <button id="getSettlement">Get Settlement</button> 
+      <button id="getSettlementReport">Get Settlement Report</button> Settlement ID: <input type="text" id="settlementIdInput" /><br>
+      <button id="getReports">Get all Reports+</button>
+      <button id="createReport">Create Reports*</button>
+      <input type="radio" name="reportType" value="ACCOUNT_STATEMENT_REPORT"> Acc Statement</input>
+      <input type="radio" name="reportType" value="BALANCE_ACTIVITY_REPORT"> Balance Activity</input>
+      <input type="radio" name="reportType" value="TRANSACTION_RECON_REPORT"> Transaction Recon</input>
+      <input type="radio" name="reportType" value="ONLINE_PAYMENTS_TRANSACTION_REPORT"> PA Transaction</input><br>
+      <button id="getReport">Get Report</button> 
+      <button id="getReportContent">Get Report Content</button> Report ID: <input type="text" id="reportIdInput" />
+      <h1>Account Capability</h1>
+      <button id="getCapability">Get Capability</button>
+      <button id="enableCapability">Enable Capability*</button><br>
+      Note: Only <code>transfer_cny_local</code> is available now.
+    </div>
+   <div class="jsonOverride">
+     *Payload Override. Enter payload here for any 'post' request.<br>
+     +Parameters Override. Enter query (ie ?page_num=1&page_size=25) here for list 'get' request.
+     <textarea id="jsonBodyInput" rows = "20" cols = "60"></textarea>
+   </div>
+   <div>
+     <p id="error" style="max-width: 80%"></p>
+     <p id="success">Success!</p>
+     <div id="contentContainer"></div>
+   </div>
+   <script>
+    $(document).ready(function() {
+        var caId = getUrlParam("caId")
+        if (caId && caId != String.Empty) {
+          document.getElementById("caIdInput").value = caId
+        }
+      })
+      
+     attachEventListeners()
+
+     function getHtmlForBalanceHistory(balance) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + balance.currency + '</span> ' + 
+                '<span class="tag">' + balance.source_type + '</span> ' + 
+               '<div class="name">' + balance.description + '</div>\
+               <pre><code>' + JSON.stringify(balance, undefined, 4) + '</code>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForDeposit(deposit) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + deposit.status + '</span> ' + 
+                '<span class="tag">' + deposit.currency + '</span> ' + 
+                '<span class="tag">' + deposit.type + '</span> ' + 
+               '<div class="name">' + deposit.deposit_id + '</div>\
+               <pre><code>' + JSON.stringify(deposit, undefined, 4) + '</code>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForTransaction(transaction) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + transaction.status + '</span> ' + 
+                '<span class="tag">' + transaction.source_type + '</span> ' + 
+                '<span class="tag">' + transaction.transaction_type + '</span> ' + 
+               '<div class="name">' + transaction.id + '</div>\
+               <pre><code>' + JSON.stringify(transaction, undefined, 4) + '</code>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForSettlement(settlement) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + settlement.status + '</span> ' + 
+                '<span class="tag">' + settlement.currency + '</span> ' + 
+               '<div class="name">' + settlement.id + '</div>\
+               <pre><code>' + JSON.stringify(settlement, undefined, 4) + '</code>\
+             </div>\
+           </div><br>'
+     }
+
+     function getHtmlForSettlementReport(settlement){
+      return '<div class="card"> \
+             <div class="card__details">\
+               <a class="button" href="' + settlement.report_url + '">Download</a>\
+                </div>\
+           </div><br>'
+     }
+
+     function getHtmlForReport(report) {
+       return '<div class="card"> \
+             <div class="card__details">\
+                <span class="tag">' + report.status + '</span> ' + 
+                '<span class="tag">' + report.type + '</span> ' + 
+                '<span class="tag">' + report.file_format + '</span> ' + 
+               '<div class="name">' + report.file_name + ' <i>(' + report.id +')</i></div>\
+               <pre><code>' + JSON.stringify(report, undefined, 4) + '</code></pre>\
+             </div>\
+           </div><br>'
+     }
+    </script>
+  </body>
+</html>
